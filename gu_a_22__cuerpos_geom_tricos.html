@@ -1,0 +1,1127 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía 22: Cuerpos Geométricos</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        svg: {
+          fontCache: 'global'
+        },
+        chtml: {
+          displayAlign: 'left'
+        }
+      };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4f46e5; --primary-dark: #4338ca; --primary-light: #eef2ff;
+            --secondary-color: #64748b; --success-color: #10b981; --success-light: #ecfdf5;
+            --danger-color: #ef4444; --danger-light: #fef2f2; --warning-color: #f59e0b;
+            --light-bg: #f1f5f9; --border-color: #cbd5e1; --text-color: #1e293b;
+            --white: #ffffff; --progress-color-start: #4f46e5; --progress-color-end: #10b981;
+        }
+        @keyframes moveGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        body {
+            font-family: 'Inter', sans-serif; display: flex; justify-content: center;
+            align-items: flex-start; min-height: 100vh;
+            background: linear-gradient(-45deg, #6d28d9, #4f46e5, #d946ef, #10b981);
+            background-size: 400% 400%; animation: moveGradient 20s ease infinite;
+            margin: 0; padding: 2em 1em;
+        }
+        .main-wrapper { width: 100%; max-width: 900px; position: relative; }
+        .card { background: var(--white); padding: 2.5em; border-radius: 16px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15); animation: fadeIn 0.5s ease-out; }
+        .hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDownFade { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #category-selection-screen h2 { font-size: 2em; color: var(--primary-color); text-align: center; margin-top: 0; margin-bottom: 0.5em; }
+        #category-selection-screen .subtitle { text-align: center; color: var(--secondary-color); margin-bottom: 2em; font-size: 1.1em; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+        #category-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5em; margin-bottom: 2.5em; }
+        .category-item { background-color: var(--white); border: 2px solid var(--border-color); border-radius: 12px; padding: 1.5em; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .category-item:hover:not(.completed) { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(79,70,229,0.1); border-color: var(--primary-color); }
+        .category-item h3 { margin: 0 0 0.5em 0; color: var(--primary-dark); font-size: 1.25em; }
+        .category-item p { margin: 0; color: var(--secondary-color); font-size: 0.95em; line-height: 1.5; }
+        .category-item.completed { border-color: var(--success-color); background-color: var(--success-light); cursor: default; }
+        .category-item.completed:hover { transform: none; box-shadow: none; }
+        .category-item.completed::before { content: '✔'; font-weight: bold; position: absolute; top: 1em; right: 1.2em; color: var(--success-color); font-size: 1.5em; }
+        .category-item .progress-info { margin-top: 1em; font-weight: bold; color: var(--success-color); }
+        #overall-progress-container { margin-top: 2em; text-align: center; border-top: 1px solid var(--border-color); padding-top: 2em;}
+        #overall-progress-container h3 { margin: 0 0 0.5em 0; color: var(--text-color); }
+        #overall-score { font-size: 1.2em; color: var(--secondary-color); }
+        #show-final-results-btn { padding: 12px 30px; font-size: 1em; font-weight: bold; color: var(--white); background-color: var(--success-color); border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s; margin-top: 1em; }
+        #show-final-results-btn:hover { background-color: #059669; }
+
+        /* --- New Summary Card Styles --- */
+        #summary-container h2 { font-size: 1.8em; margin-top: 0; margin-bottom: 0.2em; color: var(--primary-color); }
+        #summary-container .subtitle { color: var(--secondary-color); margin-top: 0; margin-bottom: 2em; }
+        .summary-section { margin-bottom: 2.5em; }
+        .summary-section h3 { font-size: 1.2em; font-weight: 700; color: var(--text-color); margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 2px solid var(--primary-light); display: flex; align-items: center; gap: 0.75em; }
+        .summary-key-concepts { line-height: 1.7; color: #374151; }
+        .summary-key-concepts p, .summary-key-concepts ul, .summary-key-concepts ol { margin-bottom: 1em; }
+        .summary-key-concepts ul, .summary-key-concepts ol { padding-left: 20px; }
+        .summary-key-concepts strong { color: var(--primary-dark); }
+        .summary-key-concepts mjx-container[display="true"] { background-color: rgba(79, 70, 229, 0.05); padding: 1em; border-radius: 8px; margin: 1em 0; }
+        .summary-tips-list { list-style: none; padding: 0; }
+        .summary-tips-list li { display: flex; align-items: flex-start; gap: 1em; margin-bottom: 1em; background-color: var(--primary-light); padding: 1em; border-radius: 8px; }
+        .summary-tips-list li::before { content: '💡'; font-size: 1.2em; line-height: 1.5; }
+        #summary-continue-btn { padding: 12px 30px; font-size: 1em; font-weight: bold; color: var(--white); background-color: var(--primary-color); border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: block; width: 100%; }
+        #summary-continue-btn:hover { background-color: var(--primary-dark); transform: scale(1.02); }
+
+        /* --- Main Quiz & Final Screen Styles --- */
+        #quiz-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em; }
+        #problem-header { color: var(--text-color); font-weight: 600; font-size: 1.1em; }
+        #score-counter { color: var(--success-color); font-weight: 600; font-size: 1em; background-color: var(--success-light); padding: 5px 10px; border-radius: 8px; }
+        #progress-container { width: 100%; background-color: #e2e8f0; border-radius: 10px; margin-bottom: 1.5em; height: 12px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--progress-color-start), var(--progress-color-end)); border-radius: 10px; transition: width 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); }
+        #question-container { font-size: 1.15em; line-height: 1.7; margin: 1em 0; color: var(--text-color); text-align: justify; }
+        #question-container table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+        #question-container th, #question-container td { border: 1px solid var(--border-color); padding: 12px; text-align: center; }
+        #question-container th { background-color: var(--light-bg); font-weight: 600; }
+        #graph-container, .option-graph-canvas-container { width: 100%; max-width: 450px; margin: 1.5em auto; border-radius: 8px; overflow: hidden; }
+        #graph-container svg, #graph-container img, .option-graph-canvas-container svg, .option-graph-canvas-container img {max-width: 100%; height: auto; display: block; margin: 0 auto; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);}
+        #options-container { margin-top: 1.5em; display: flex; flex-direction: column; gap: 0.75em; }
+        .option-button { display: flex; align-items: center; gap: 1em; width: 100%; padding: 14px 18px; font-size: 1.05em; text-align: left; background-color: var(--white); border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .option-button:hover:not(.disabled) { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .option-button .label { font-weight: bold; color: var(--primary-color); }
+        .option-button .value { flex-grow: 1; }
+        .option-button.correct { border-color: var(--success-color); background-color: var(--success-light); }
+        .option-button.correct .label { color: var(--success-color); }
+        .option-button.incorrect { border-color: var(--danger-color); background-color: var(--danger-light); }
+        .option-button.incorrect .label { color: var(--danger-color); }
+        .option-button.disabled { cursor: not-allowed; }
+        .options-grid-with-graphs { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+        .option-block-graph { padding: 1em; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s ease-in-out; background-color: var(--white); }
+        .option-block-graph:hover:not(.disabled) { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .option-block-graph.correct { border-color: var(--success-color)!important; background-color: var(--success-light); }
+        .option-block-graph.incorrect { border-color: var(--danger-color)!important; background-color: var(--danger-light); }
+        .option-block-graph .label { font-size: 1.2em; font-weight: bold; margin-bottom: 0.5em; color: var(--primary-color); }
+        #feedback-container { margin-top: 1.5em; padding: 1.2em; border-radius: 12px; display: none; animation: slideDownFade 0.4s ease-out; line-height: 1.7; text-align: justify; }
+        #feedback-container.correct { background-color: var(--success-light); border-left: 5px solid var(--success-color); }
+        #feedback-container.incorrect { background-color: var(--danger-light); border-left: 5px solid var(--danger-color); }
+        #feedback-title { display: flex; align-items: center; font-size: 1.2em; font-weight: 700; margin-bottom: 0.5em; }
+        #feedback-title svg { width: 24px; height: 24px; margin-right: 8px; }
+        #feedback-container.correct #feedback-title { color: var(--success-color); }
+        #feedback-container.incorrect #feedback-title { color: var(--danger-color); }
+        #navigation-container { display: flex; justify-content: flex-end; margin-top: 2em; }
+        #next-button, .nav-btn { padding: 12px 30px; font-size: 1em; font-weight: bold; color: var(--white); background-color: var(--primary-color); border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        #next-button { visibility: hidden; opacity: 0; }
+        #next-button.visible { visibility: visible; opacity: 1; }
+        #next-button:hover, .nav-btn:hover { background-color: var(--primary-dark); }
+        #final-screen { text-align: center; animation: fadeIn 0.5s ease-out; }
+        #final-screen h2 { font-size: 2.2em; color: var(--primary-color); font-weight: 700; }
+        #final-screen p { font-size: 1.2em; }
+        .highlight { color: var(--primary-color); font-weight: 700; }
+        @media (max-width: 680px) { .options-grid-with-graphs { grid-template-columns: 1fr; } #category-list { grid-template-columns: 1fr; }}
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div id="category-selection-screen" class="card">
+            <h2>Guía 22: Cuerpos Geométricos</h2>
+            <p class="subtitle">Selecciona un tema para comenzar. Cada sección se enfoca en una habilidad clave. ¡Completa todas las secciones para demostrar tu maestría!</p>
+            <ul id="category-list"></ul>
+            <div id="overall-progress-container" class="hidden">
+                <h3>Progreso General</h3>
+                <p id="overall-score"></p>
+                <button id="show-final-results-btn" class="nav-btn hidden">Ver Resumen Final</button>
+            </div>
+        </div>
+
+        <div id="quiz-wrapper" class="hidden">
+            <div id="summary-container" class="card hidden">
+                <h2 id="summary-title"></h2>
+                <p class="subtitle">Prepárate para la siguiente sección.</p>
+
+                <div class="summary-section">
+                    <h3>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open" style="color: var(--primary-dark);"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                      Conceptos Clave y Fórmulas
+                    </h3>
+                    <div id="summary-key-concepts" class="summary-key-concepts"></div>
+                </div>
+                
+                <div class="summary-section">
+                    <h3>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap" style="color: var(--warning-color);"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                      Consejos para esta Sección
+                    </h3>
+                    <ul id="summary-tips-list" class="summary-tips-list"></ul>
+                </div>
+                
+                <button id="summary-continue-btn">Comenzar Problemas</button>
+            </div>
+
+            <div id="quiz-container" class="hidden card">
+                <div id="progress-container"><div id="progress-bar"></div></div>
+                <div id="quiz-header-bar">
+                    <div id="problem-header"></div>
+                    <div id="score-counter"></div>
+                </div>
+                <div id="question-container"></div>
+                <div id="graph-container"></div>
+                <div id="options-container"></div>
+                <div id="feedback-container"></div>
+                <div id="navigation-container"><button id="next-button">Siguiente →</button></div>
+            </div>
+
+            <div id="final-screen" class="hidden card">
+                <h2 id="final-title"></h2>
+                <p id="final-message"></p>
+                <p id="final-score" style="font-size: 2.5em; font-weight: bold; margin: 0.5em 0;"></p>
+                <p id="final-percentage" style="font-size: 1.5em;"></p>
+                <button id="back-to-menu-btn" class="nav-btn">Volver al Menú</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function renderMath() {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        setTimeout(() => window.MathJax.typesetPromise(), 0);
+      }
+    }
+
+    function renderDiagram(diagram) {
+        if (!diagram) return '';
+        if (diagram.type === 'raster') {
+            return `<img src="${diagram.src}" alt="Diagrama" style="max-width: 100%; height: auto; display: block; margin: 0 auto; background: white; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;" />`;
+        }
+        return '';
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const icons = {
+            check: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>`,
+            x: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`
+        };
+        const summaries = {
+  "ai-cat-1756952453250-0": {
+    "title": "Grupo 1: Cálculos Fundamentales y Aplicaciones Directas",
+    "key_concepts_html": "<p>Esta sección se centra en la aplicación directa de fórmulas básicas para el cálculo de volúmenes y áreas superficiales de <strong>cubos</strong> y <strong>prismas rectangulares</strong>. Es crucial dominar:</p><ul><li><strong>Suma de aristas de un cubo:</strong> Un cubo tiene 12 aristas de igual longitud, por lo tanto, la suma es \\(12 \\cdot a\\), donde \\(a\\) es la arista.</li><li><strong>Volumen de un prisma rectangular:</strong> \\(V = \\text{largo} \\cdot \\text{ancho} \\cdot \\text{altura}\\).</li><li><strong>Volumen de un cubo:</strong> \\(V = a^3\\).</li><li><strong>Área total de un cubo:</strong> \\(A = 6a^2\\).</li><li><strong>Conversiones de unidades:</strong> Es fundamental recordar que \\(1 \\text{ litro} = 1000 \\text{ cm}^3\\) y \\(1 \\text{ m}^3 = 1000 \\text{ litros}\\).</li></ul><p>Los problemas aquí requieren identificar correctamente las dimensiones y aplicar las fórmulas pertinentes, a menudo incluyendo conversiones de unidades.</p>",
+    "tips": [
+      "Presta atención a los detalles en los enunciados y diagramas.",
+      "Recuerda revisar las fórmulas y conceptos clave relacionados antes de empezar.",
+      "Usa la explicación para entender tus errores y reforzar tu aprendizaje.",
+      "¡Mucha suerte en esta sección!"
+    ]
+  },
+  "ai-cat-1756952453250-1": {
+    "title": "Grupo 2: Razonamiento Algebraico y Proporcional",
+    "key_concepts_html": "<p>Esta sección se enfoca en cómo los cambios en las dimensiones afectan el volumen y el área superficial de los cuerpos geométricos, utilizando expresiones algebraicas y razones. Los conceptos clave incluyen:</p><ul><li><strong>Escalado de volúmenes:</strong> Si las dimensiones de un cuerpo se multiplican por un factor \\(k\\), el volumen se multiplica por \\(k^3\\).</li><li><strong>Escalado de áreas:</strong> Si las dimensiones de un cuerpo se multiplican por un factor \\(k\\), el área superficial se multiplica por \\(k^2\\).</li><li><strong>Cambios porcentuales:</strong> Un aumento del \\(x\\%\\) se representa multiplicando por \\((1 + x/100)\\), y una disminución por \\((1 - x/100)\\).</li><li><strong>Relación entre volúmenes y áreas de cuerpos semejantes:</strong> Si la razón de las aristas es \\(a_1:a_2\\), entonces la razón de los volúmenes es \\(a_1^3:a_2^3\\) y la razón de las áreas es \\(a_1^2:a_2^2\\).</li></ul><p>Los problemas requieren habilidades de factorización y manipulación algebraica.</p>",
+    "tips": [
+      "Presta atención a los detalles en los enunciados y diagramas.",
+      "Recuerda revisar las fórmulas y conceptos clave relacionados antes de empezar.",
+      "Usa la explicación para entender tus errores y reforzar tu aprendizaje.",
+      "¡Mucha suerte en esta sección!"
+    ]
+  },
+  "ai-cat-1756952453250-2": {
+    "title": "Grupo 3: Sólidos Compuestos y Visualización Espacial",
+    "key_concepts_html": "<p>Esta sección desafía la capacidad de calcular volúmenes y áreas superficiales de sólidos complejos que resultan de la unión o sustracción de cuerpos geométricos más simples. Los puntos clave a considerar son:</p><ul><li><strong>Descomposición:</strong> Dividir el sólido compuesto en paralelepípedos rectangulares o cubos más simples.</li><li><strong>Volumen total:</strong> Calcular la suma de los volúmenes de las partes (o restar volúmenes huecos).</li><li><strong>Área superficial total:</strong> Calcular las áreas de <strong>todas las caras expuestas</strong>, prestando especial atención a no contar las superficies de contacto internas. Para sólidos huecos, la diferencia de los volúmenes externos e internos da el volumen del material.</li><li><strong>Visualización 3D:</strong> Es fundamental poder imaginar la forma resultante y las caras que quedan expuestas.</li></ul>",
+    "tips": [
+      "Presta atención a los detalles en los enunciados y diagramas.",
+      "Recuerda revisar las fórmulas y conceptos clave relacionados antes de empezar.",
+      "Usa la explicación para entender tus errores y reforzar tu aprendizaje.",
+      "¡Mucha suerte en esta sección!"
+    ]
+  },
+  "ai-cat-1756952453250-3": {
+    "title": "Grupo 4: Aplicaciones Avanzadas y Problemas de Múltiples Pasos",
+    "key_concepts_html": "<p>Esta categoría presenta problemas que requieren un análisis más profundo y la combinación de varios conceptos geométricos y algebraicos. Las habilidades clave para esta sección incluyen:</p><ul><li><strong>Interpretación de enunciados:</strong> Desglosar problemas complejos en pasos manejables.</li><li><strong>Cálculos de volumen y área:</strong> Aplicar las fórmulas en contextos del mundo real, a menudo involucrando objetos huecos o con materiales específicos.</li><li><strong>Porcentajes y proporciones:</strong> Utilizar porcentajes para determinar capacidades efectivas o cambios en el volumen.</li><li><strong>Conversiones de unidades:</strong> Realizar conversiones precisas entre diferentes unidades (mm a cm, m a cm, litros a \\(\\text{cm}^3\\)).</li><li><strong>Resolución de ecuaciones:</strong> Encontrar dimensiones desconocidas a partir de áreas o volúmenes dados.</li></ul><p>Estos problemas simulan situaciones prácticas y demandan un pensamiento crítico y estructurado.</p>",
+    "tips": [
+      "Presta atención a los detalles en los enunciados y diagramas.",
+      "Recuerda revisar las fórmulas y conceptos clave relacionados antes de empezar.",
+      "Usa la explicación para entender tus errores y reforzar tu aprendizaje.",
+      "¡Mucha suerte en esta sección!"
+    ]
+  }
+};
+        const allProblemsData = [
+  {
+    "text": "Si la arista de un cubo mide \\(3 \\text{ cm}\\), entonces el triple de la suma de las medidas de todas las aristas del cubo es:",
+    "options": [
+      {
+        "text": "\\(160 \\text{ cm}\\)"
+      },
+      {
+        "text": "\\(120 \\text{ cm}\\)"
+      },
+      {
+        "text": "\\(108 \\text{ cm}\\)"
+      },
+      {
+        "text": "\\(60 \\text{ cm}\\)"
+      }
+    ],
+    "correct": 2,
+    "explanation": "Un cubo tiene \\(12\\) aristas de igual longitud. Si cada arista mide \\(3 \\text{ cm}\\), la suma de las medidas de todas las aristas es \\(12 \\times 3 = 36 \\text{ cm}\\). El triple de esta suma es \\(3 \\times 36 = 108 \\text{ cm}\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "13",
+    "internalId": "q-1756952453250-0.8302409361752232",
+    "id": "q-ai-cat-1756952453250-0-0"
+  },
+  {
+    "text": "Considera un rectángulo de lados \\(5 \\text{ cm}\\) y \\(27,5 \\text{ cm}\\), y éste se traslada \\(10 \\text{ cm}\\) verticalmente desde el plano que lo contiene, hasta un plano paralelo. Si entre la figura original y su imagen se genera un prisma recto rectangular, virtual, ¿cuál es el volumen de dicho prisma en \\(\\text{cm}^3\\)?",
+    "options": [
+      {
+        "text": "1.370"
+      },
+      {
+        "text": "1.375"
+      },
+      {
+        "text": "1.350"
+      },
+      {
+        "text": "925"
+      }
+    ],
+    "correct": 1,
+    "explanation": "El volumen de un prisma recto rectangular se calcula multiplicando el área de la base por la altura. En este caso, el área de la base es \\(5 \\text{ cm} \\times 27,5 \\text{ cm} = 137,5 \\text{ cm}^2\\), y la altura es \\(10 \\text{ cm}\\). Por lo tanto, el volumen es \\(137,5 \\text{ cm}^2 \\times 10 \\text{ cm} = 1375 \\text{ cm}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "14",
+    "internalId": "q-1756952453250-0.23412390867564858",
+    "id": "q-ai-cat-1756952453250-0-1"
+  },
+  {
+    "text": "Una piscina prefabricada con fondo plano cuyo espacio interno representa un prisma rectangular tiene \\(4,5 \\text{ m}\\) de largo y \\(2 \\text{ m}\\) de ancho, entre paredes interiores. Si el volumen de agua efectiva con que se llena la piscina es de \\(7,2 \\text{ m}^3\\), y esta está ubicada en un terreno nivelado, ¿hasta qué altura llega el agua en reposo?",
+    "options": [
+      {
+        "text": "\\(125 \\text{ cm}\\)"
+      },
+      {
+        "text": "\\(70 \\text{ cm}\\)"
+      },
+      {
+        "text": "\\(80 \\text{ cm}\\)"
+      },
+      {
+        "text": "\\(90 \\text{ cm}\\)"
+      }
+    ],
+    "correct": 2,
+    "explanation": "El volumen de un prisma rectangular es \\(V = \\text{largo} \\times \\text{ancho} \\times \\text{altura}\\). Despejando la altura, \\(h = V / (\\text{largo} \\times \\text{ancho})\\). Sustituyendo los valores, \\(h = 7,2 \\text{ m}^3 / (4,5 \\text{ m} \\times 2 \\text{ m}) = 7,2 \\text{ m}^3 / 9 \\text{ m}^2 = 0,8 \\text{ m}\\). Como \\(1 \\text{ m} = 100 \\text{ cm}\\), la altura es \\(0,8 \\times 100 = 80 \\text{ cm}\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "34",
+    "internalId": "q-1756952453250-0.16895595002341723",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420122-gebyedo912-Screenshot_20250903_222821.png",
+      "filename": "Screenshot_20250903_222821.png"
+    },
+    "id": "q-ai-cat-1756952453250-0-2"
+  },
+  {
+    "text": "Si la capacidad de un cubo es \\(27 \\text{ litros}\\), entonces su área es:",
+    "options": [
+      {
+        "text": "\\(5.400 \\text{ cm}^2\\)"
+      },
+      {
+        "text": "\\(9.006 \\text{ cm}^2\\)"
+      },
+      {
+        "text": "\\(5.450 \\text{ cm}^2\\)"
+      },
+      {
+        "text": "\\(5.000 \\text{ cm}^2\\)"
+      }
+    ],
+    "correct": 0,
+    "explanation": "Primero convertimos la capacidad a \\(\\text{cm}^3\\): \\(27 \\text{ litros} = 27 \\times 1000 \\text{ cm}^3 = 27000 \\text{ cm}^3\\). El volumen de un cubo es \\(V = a^3\\), por lo que la arista \\(a = \\sqrt[3]{27000} = 30 \\text{ cm}\\). El área total de un cubo es \\(A = 6a^2\\), entonces \\(A = 6 \\times (30 \\text{ cm})^2 = 6 \\times 900 \\text{ cm}^2 = 5400 \\text{ cm}^2\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "35",
+    "internalId": "q-1756952453250-0.7720700591187835",
+    "id": "q-ai-cat-1756952453250-0-3"
+  },
+  {
+    "text": "La figura adjunta muestra una unidad construida con \\(18\\) ladrillos de las dimensiones especificadas en ella (\\(20 \\text{ cm} \\times 10 \\text{ cm} \\times 5 \\text{ cm}\\)). Si producto de las uniones con mezcla de hormigón el volumen se incrementa en un \\(10\\%\\), ¿cuál es el volumen de la unidad?",
+    "options": [
+      {
+        "text": "\\(19.800 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(18.000 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(198.000 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(180.000 \\text{ cm}^3\\)"
+      }
+    ],
+    "correct": 0,
+    "explanation": "El volumen de un solo ladrillo es \\(20 \\text{ cm} \\times 10 \\text{ cm} \\times 5 \\text{ cm} = 1000 \\text{ cm}^3\\). Para \\(18\\) ladrillos, el volumen total sin considerar la mezcla es \\(18 \\times 1000 \\text{ cm}^3 = 18000 \\text{ cm}^3\\). Si el volumen se incrementa en un \\(10\\%\\) debido a las uniones, el volumen final es \\(18000 \\times 1,10 = 19800 \\text{ cm}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "38",
+    "internalId": "q-1756952453250-0.893455731312498",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420123-hn77025azfs-Screenshot_20250903_222808.png",
+      "filename": "Screenshot_20250903_222808.png"
+    },
+    "id": "q-ai-cat-1756952453250-0-4"
+  },
+  {
+    "text": "Se tiene un paralelepípedo recto de base cuadrada de lado \\(10 \\text{ cm}\\) y altura \\(15 \\text{ cm}\\). Si se aumentan al doble las medidas de sus aristas, ¿cuál es el volumen del nuevo prisma?",
+    "options": [
+      {
+        "text": "12.000 \\text{ cm}^3"
+      },
+      {
+        "text": "6.000 \\text{ cm}^3"
+      },
+      {
+        "text": "3.000 \\text{ cm}^3"
+      },
+      {
+        "text": "90.000 \\text{ cm}^3"
+      }
+    ],
+    "correct": 0,
+    "explanation": "El volumen original del paralelepípedo es \\(V_o = (10 \\text{ cm})^2 \\times 15 \\text{ cm} = 1500 \\text{ cm}^3\\). Si todas las aristas se aumentan al doble, las nuevas dimensiones serán \\(20 \\text{ cm}\\) para la base y \\(30 \\text{ cm}\\) para la altura. El nuevo volumen es \\(V_n = (20 \\text{ cm})^2 \\times 30 \\text{ cm} = 400 \\text{ cm}^2 \\times 30 \\text{ cm} = 12000 \\text{ cm}^3\\). Alternativamente, al duplicar todas las dimensiones, el volumen se multiplica por \\(2^3 = 8\\), resultando en \\(1500 \\text{ cm}^3 \\times 8 = 12000 \\text{ cm}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "1",
+    "internalId": "q-1756952453250-0.06264320553275282",
+    "id": "q-ai-cat-1756952453250-1-0"
+  },
+  {
+    "text": "Se tiene un paralelepípedo recto de base cuadrada de lado \\(a \\text{ cm}\\) y altura \\(b \\text{ cm}\\). Si se aumentan en \\(10\\%\\) las medidas de las aristas del cuadrado y se disminuye en \\(1/5\\) la altura, ¿cuál expresión representa el volumen del nuevo prisma en \\(\\text{cm}^3\\), en términos del volumen del prisma original?",
+    "options": [
+      {
+        "text": "\\(0,242 a^2 \\cdot b\\)"
+      },
+      {
+        "text": "\\(0,96 a^2 \\cdot b\\)"
+      },
+      {
+        "text": "\\(0,968 a^2 \\cdot b\\)"
+      },
+      {
+        "text": "\\(a^2 \\cdot b\\)"
+      }
+    ],
+    "correct": 2,
+    "explanation": "El volumen original es \\(V_{original} = a^2 \\cdot b\\). Las aristas del cuadrado de la base aumentan en un \\(10\\%\\), por lo que el nuevo lado es \\(a' = a(1 + 0,10) = 1,1a\\). La altura disminuye en \\(1/5\\), lo que significa que la nueva altura es \\(b' = b(1 - 1/5) = b(4/5) = 0,8b\\). El nuevo volumen es \\(V_{nuevo} = (a')^2 \\cdot b' = (1,1a)^2 \\cdot (0,8b) = 1,21a^2 \\cdot 0,8b = 0,968a^2b\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "2",
+    "internalId": "q-1756952453250-0.5364334456957209",
+    "id": "q-ai-cat-1756952453250-1-1"
+  },
+  {
+    "text": "El volumen del paralelepípedo de la figura adjunta, en metros cúbicos, es \\((x^3 + 5x^2 + 6x)\\), con \\(x\\) un número real. Las dimensiones de la base son \\(x\\) y \\(x+3\\). ¿Cuál de las siguientes expresiones representa el valor de \\(h\\)?",
+    "options": [
+      {
+        "text": "\\(x - 2\\)"
+      },
+      {
+        "text": "\\(x + 2\\)"
+      },
+      {
+        "text": "\\(2 - x\\)"
+      },
+      {
+        "text": "\\(x^2 + 2\\)"
+      }
+    ],
+    "correct": 1,
+    "explanation": "El volumen de un paralelepípedo es el producto de las dimensiones de su base y su altura: \\(V = \\text{largo} \\times \\text{ancho} \\times \\text{altura}\\). En este caso, \\(V = x(x+3)h\\). También se nos da que \\(V = x^3 + 5x^2 + 6x\\). Factorizando esta expresión, obtenemos \\(V = x(x^2 + 5x + 6)\\). Factorizando el trinomio cuadrado, \\(x^2 + 5x + 6 = (x+2)(x+3)\\). Por lo tanto, \\(V = x(x+2)(x+3)\\). Igualando las dos expresiones para \\(V\\): \\(x(x+3)h = x(x+2)(x+3)\\). Dividiendo ambos lados por \\(x(x+3)\\) (asumiendo \\(x \\ne 0\\) y \\(x \\ne -3\\)), obtenemos \\(h = x+2\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "3",
+    "internalId": "q-1756952453250-0.29344430195136706",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420123-ik9cqo2y3fe-Screenshot_20250903_222956.png",
+      "filename": "Screenshot_20250903_222956.png"
+    },
+    "id": "q-ai-cat-1756952453250-1-2"
+  },
+  {
+    "text": "La razón entre los volúmenes de dos cubos es \\(125:343\\). ¿Cuál es la razón entre sus áreas?",
+    "options": [
+      {
+        "text": "125:7"
+      },
+      {
+        "text": "25:49"
+      },
+      {
+        "text": "5:7"
+      },
+      {
+        "text": "9:14"
+      }
+    ],
+    "correct": 1,
+    "explanation": "Si la razón entre los volúmenes de dos cubos es \\(V_1:V_2 = 125:343\\), entonces la razón entre sus aristas (\\(a_1:a_2\\)) es la raíz cúbica de esta razón: \\(a_1:a_2 = \\sqrt[3]{125}:\\sqrt[3]{343} = 5:7\\). La razón entre sus áreas totales (\\(A_1:A_2\\)) es el cuadrado de la razón de sus aristas: \\(A_1:A_2 = (5:7)^2 = 25:49\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "12",
+    "internalId": "q-1756952453250-0.6489198257554895",
+    "id": "q-ai-cat-1756952453250-1-3"
+  },
+  {
+    "text": "La imagen adjunta muestra 4 cubos de Rubik conformados cada uno por la unión de cubos pequeños idénticos de aristas de \\(2 \\text{ cm}\\) cada uno. ¿Cuál de las siguientes opciones representa las razones de las áreas de los 4 cubos de Rubik, de izquierda a derecha, respectivamente?",
+    "options": [
+      {
+        "text": "4 : 9 : 16 : 25"
+      },
+      {
+        "text": "\\(2^3 : 3^3 : 4^3 : 5^3\\)"
+      },
+      {
+        "text": "2 : 3 : 4 : 5"
+      },
+      {
+        "text": "2 : 6 : 8 : 10"
+      }
+    ],
+    "correct": 0,
+    "explanation": "Si los cubos de Rubik están formados por cubos pequeños de \\(2 \\text{ cm}\\) de arista, y asumiendo que los cubos de Rubik son de tamaños \\(2 \\times 2 \\times 2\\), \\(3 \\times 3 \\times 3\\), \\(4 \\times 4 \\times 4\\) y \\(5 \\times 5 \\times 5\\) cubos pequeños, entonces las aristas de los cubos de Rubik son \\(2 \\times 2 = 4 \\text{ cm}\\), \\(3 \\times 2 = 6 \\text{ cm}\\), \\(4 \\times 2 = 8 \\text{ cm}\\) y \\(5 \\times 2 = 10 \\text{ cm}\\), respectivamente. La razón entre las aristas es \\(4:6:8:10\\), que se simplifica a \\(2:3:4:5\\). Dado que el área de un cubo es proporcional al cuadrado de su arista (\\(A = 6a^2\\)), la razón entre las áreas será el cuadrado de la razón de sus aristas: \\(2^2:3^2:4^2:5^2 = 4:9:16:25\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "22",
+    "internalId": "q-1756952453250-0.5835396222196941",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420123-h2s01p1718c-Screenshot_20250903_223030.png",
+      "filename": "Screenshot_20250903_223030.png"
+    },
+    "id": "q-ai-cat-1756952453250-1-4"
+  },
+  {
+    "text": "La siguiente imagen representa una escala de hormigón conformada por la unión virtual de \\(3\\) paralelepípedos rectangulares de iguales anchos y largos, pero de diferentes alturas. Si las alturas de cada escalón de la escalera son iguales, ¿cuál es el volumen total de la escalera, en litros?",
+    "options": [
+      {
+        "text": "144"
+      },
+      {
+        "text": "140"
+      },
+      {
+        "text": "216"
+      },
+      {
+        "text": "126"
+      }
+    ],
+    "correct": 0,
+    "explanation": "Para calcular el volumen total de la escalera, se debe descomponer en tres paralelepípedos rectangulares y sumar sus volúmenes. Asumiendo una estructura común de escalera con un ancho constante (ej., \\(40 \\text{ cm}\\)), alturas de escalón iguales (ej., \\(20 \\text{ cm}\\)) y longitudes de pisada de \\(30 \\text{ cm}\\). El volumen del escalón inferior (\\(90 \\text{ cm} \\times 40 \\text{ cm} \\times 20 \\text{ cm}\\)) es \\(72000 \\text{ cm}^3\\). El del intermedio (\\(60 \\text{ cm} \\times 40 \\text{ cm} \\times 20 \\text{ cm}\\)) es \\(48000 \\text{ cm}^3\\). El del superior (\\(30 \\text{ cm} \\times 40 \\text{ cm} \\times 20 \\text{ cm}\\)) es \\(24000 \\text{ cm}^3\\). La suma total es \\(72000 + 48000 + 24000 = 144000 \\text{ cm}^3\\), que equivale a \\(144 \\text{ litros}\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "8",
+    "internalId": "q-1756952453250-0.8512759299614494",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420123-l5n8k292srb-Screenshot_20250903_223105.png",
+      "filename": "Screenshot_20250903_223105.png"
+    },
+    "id": "q-ai-cat-1756952453250-2-0"
+  },
+  {
+    "text": "La imagen adjunta corresponde a un sólido que puede ser visualizado como la unión de \\(2\\) paralelepípedos rectangulares de igual ancho, pero de distintos largos y alturas. Si las medidas están en pies (\\(\\text{ft}\\)), ¿cuál es el área en \\(\\text{ft}^2\\) de todo el sólido, incluyendo todas las caras?",
+    "options": [
+      {
+        "text": "328"
+      },
+      {
+        "text": "348"
+      },
+      {
+        "text": "299"
+      },
+      {
+        "text": "390"
+      }
+    ],
+    "correct": 3,
+    "explanation": "El área total de un sólido compuesto se calcula sumando las áreas de todas sus caras visibles. Esto implica identificar las diferentes superficies (base, techo, laterales, caras frontales y posteriores, y cualquier cara interna que se genere por la unión de los paralelepípedos) y asegurarse de no incluir las áreas de contacto entre ellos. Para obtener \\(390 \\text{ ft}^2\\), la configuración de los dos paralelepípedos de igual ancho pero diferentes largos y alturas (por ejemplo, un bloque de \\(10 \\text{ ft} \\times 6 \\text{ ft} \\times 5 \\text{ ft}\\) y otro de \\(5 \\text{ ft} \\times 6 \\text{ ft} \\times 3 \\text{ ft}\\) unidos en 'L') debe sumar las áreas de todas sus \\(9\\) caras expuestas (frontal L-shape, trasera L-shape, base, top 2 partes, lados 2 partes, y la cara interior del escalón).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "9",
+    "internalId": "q-1756952453250-0.870485724928844",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420123-5m1g11ka2p4-Screenshot_20250903_223152.png",
+      "filename": "Screenshot_20250903_223152.png"
+    },
+    "id": "q-ai-cat-1756952453250-2-1"
+  },
+  {
+    "text": "La imagen adjunta corresponde a una jardinera fabricada por la unión y pegado de \\(3\\) tipos de paralelepípedos rectangulares de madera, de bases cuadradas idénticas de \\(6 \\text{ cm}\\) de cada lado. ¿Cuál es el volumen máximo de llenado que tiene la jardinera, sin sobrepasar la altura máxima de esta?",
+    "options": [
+      {
+        "text": "\\(56.160 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(84.240 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(70.200 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(90.720 \\text{ cm}^3\\)"
+      }
+    ],
+    "correct": 1,
+    "explanation": "Para calcular el volumen máximo de llenado de la jardinera, se debe determinar el volumen interior de la misma. Las 'bases cuadradas idénticas de \\(6 \\text{ cm}\\) de cada lado' se refieren al grosor de la madera. Si la jardinera tiene, por ejemplo, dimensiones externas de \\(72 \\text{ cm}\\) de largo, \\(72 \\text{ cm}\\) de ancho y \\(29,4 \\text{ cm}\\) de alto, y el grosor de la madera es de \\(6 \\text{ cm}\\), entonces las dimensiones internas serían: largo \\(72 - 2 \\times 6 = 60 \\text{ cm}\\), ancho \\(72 - 2 \\times 6 = 60 \\text{ cm}\\), y alto \\(29,4 - 6 = 23,4 \\text{ cm}\\) (considerando que es abierta por arriba). El volumen interior sería \\(60 \\text{ cm} \\times 60 \\text{ cm} \\times 23,4 \\text{ cm} = 84240 \\text{ cm}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "15",
+    "internalId": "q-1756952453250-0.7028850683375826",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420124-t0p26xe9pb-Screenshot_20250903_223231.png",
+      "filename": "Screenshot_20250903_223231.png"
+    },
+    "id": "q-ai-cat-1756952453250-2-2"
+  },
+  {
+    "text": "La imagen adjunta corresponde a un mueble de madera en forma de paralelepípedo rectangular, con las dimensiones especificadas en \\(\\text{cm}\\) y cuyo grosor de madera es el mismo en todas las dimensiones que tiene, incluyendo la cara posterior del mueble. (Grosor homogéneo). ¿Cuál de las siguientes expresiones representa el volumen de madera que tiene este mueble?",
+    "options": [
+      {
+        "text": "\\((30\\cdot24\\cdot60 – 2\\cdot27\\cdot26\\cdot24) \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\((30\\cdot24\\cdot60 – 27\\cdot26\\cdot22) \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\((30\\cdot24\\cdot60 – 2\\cdot27\\cdot26\\cdot20) \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\((30\\cdot24\\cdot60 – 2\\cdot27\\cdot26\\cdot22) \\text{ cm}^3\\)"
+      }
+    ],
+    "correct": 3,
+    "explanation": "El volumen de madera se calcula restando el volumen de los espacios huecos internos al volumen total externo del mueble. La expresión \\( (30 \\cdot 24 \\cdot 60) \\text{ cm}^3 \\) representa el volumen externo del paralelepípedo. La expresión \\( (2 \\cdot 27 \\cdot 26 \\cdot 22) \\text{ cm}^3 \\) representa el volumen de dos espacios internos idénticos, cada uno con dimensiones de \\(27 \\text{ cm} \\times 26 \\text{ cm} \\times 22 \\text{ cm}\\). Por lo tanto, el volumen de madera es la diferencia entre el volumen externo y el volumen combinado de los espacios internos, lo que corresponde a la opción D.",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "23",
+    "internalId": "q-1756952453250-0.35192576025417877",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420124-4zws05stol-Screenshot_20250903_223310.png",
+      "filename": "Screenshot_20250903_223310.png"
+    },
+    "id": "q-ai-cat-1756952453250-2-3"
+  },
+  {
+    "text": "La imagen adjunta representa el remanente de un cubo mayor de arista \\(5 \\text{ cm}\\), conformado a su vez por cubos pequeños de aristas \\(1 \\text{ cm}\\), luego que le fueran extraídos algunos cubos de arista \\(1 \\text{ cm}\\). Si la figura remanente de la imagen no tiene espacios internos entre los cubos pequeños que quedan, ¿qué porcentaje de volumen le fue extraído al cubo original de arista \\(5 \\text{ cm}\\)?",
+    "options": [
+      {
+        "text": "30,4%"
+      },
+      {
+        "text": "38%"
+      },
+      {
+        "text": "34,4%"
+      },
+      {
+        "text": "12,8%"
+      }
+    ],
+    "correct": 0,
+    "explanation": "El cubo original de arista \\(5 \\text{ cm}\\) está compuesto por \\(5 \\times 5 \\times 5 = 125\\) cubos pequeños de \\(1 \\text{ cm}\\) de arista. Si el porcentaje de volumen extraído es \\(30,4\\%\\), esto significa que se extrajeron \\(0,304 \\times 125 = 38\\) cubos pequeños. La configuración de la figura adjunta (no mostrada) debe resultar en la extracción de \\(38\\) cubos para que este porcentaje sea correcto. El cálculo del porcentaje es \\((38 / 125) \\times 100\\% = 30,4\\%\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "26",
+    "internalId": "q-1756952453250-0.9143552628703384",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420126-f88k169ptz6-Screenshot_20250903_223339.png",
+      "filename": "Screenshot_20250903_223339.png"
+    },
+    "id": "q-ai-cat-1756952453250-2-4"
+  },
+  {
+    "text": "Una alumna construye un dado de cartón en forma de cubo, cuya área total es de \\(6.144 \\text{ cm}^2\\). Los números del dado quedaron representados por círculos idénticos de papel lustre cuyos diámetros son la octava parte de la arista \\(X\\) del cubo. ¿Cuál opción corresponde al área total de todos los números del dado formados con papel lustre?",
+    "options": [
+      {
+        "text": "\\(84 \\pi \\text{ cm}^2\\)"
+      },
+      {
+        "text": "\\(126 \\pi \\text{ cm}^2\\)"
+      },
+      {
+        "text": "\\(168 \\pi \\text{ cm}^2\\)"
+      },
+      {
+        "text": "\\(672 \\pi \\text{ cm}^2\\)"
+      }
+    ],
+    "correct": 0,
+    "explanation": "Primero, calculamos la arista \\(X\\) del cubo usando su área total: \\(A_{total} = 6X^2\\). Dado que \\(6X^2 = 6144 \\text{ cm}^2\\), entonces \\(X^2 = 1024 \\text{ cm}^2\\), lo que implica que \\(X = 32 \\text{ cm}\\). El diámetro de cada círculo es la octava parte de la arista \\(X\\), es decir, \\(D = 32/8 = 4 \\text{ cm}\\). El radio es la mitad del diámetro, \\(r = 2 \\text{ cm}\\). El área de un círculo es \\(A_c = \\pi r^2 = \\pi (2 \\text{ cm})^2 = 4\\pi \\text{ cm}^2\\). Un dado tiene números del \\(1\\) al \\(6\\), lo que suma un total de \\(1+2+3+4+5+6 = 21\\) círculos. Por lo tanto, el área total de todos los números es \\(21 \\times 4\\pi \\text{ cm}^2 = 84\\pi \\text{ cm}^2\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "10",
+    "internalId": "q-1756952453250-0.8207699888870912",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420126-5looy48zvrt-Screenshot_20250903_223453.png",
+      "filename": "Screenshot_20250903_223453.png"
+    },
+    "id": "q-ai-cat-1756952453250-3-0"
+  },
+  {
+    "text": "Javiera desea comprar un horno eléctrico en forma de paralelepípedo rectangular, de cierto fabricante que señala que el \\(80\\%\\) del volumen medido sobre las dimensiones externas del horno, corresponde al volumen interior de capacidad efectiva de este. Si Javiera desea que el horno tenga una capacidad interior efectiva de al menos \\(80 \\text{ litros}\\), ¿cuál de los siguientes modelos de hornos de dicha marca, con sus respectivas dimensiones externas, satisface su requerimiento?",
+    "options": [
+      {
+        "text": "Turkey: \\(55 \\text{ cm}\\) de ancho, \\(45 \\text{ cm}\\) de alto y \\(40 \\text{ cm}\\) de profundidad."
+      },
+      {
+        "text": "Lamb: \\(60 \\text{ cm}\\) de ancho, \\(35 \\text{ cm}\\) de alto y \\(45 \\text{ cm}\\) de profundidad."
+      },
+      {
+        "text": "Boar: \\(50 \\text{ cm}\\) de ancho, \\(45 \\text{ cm}\\) de alto y \\(45 \\text{ cm}\\) de profundidad."
+      },
+      {
+        "text": "Deer: \\(70 \\text{ cm}\\) de ancho, \\(40 \\text{ cm}\\) de alto y \\(35 \\text{ cm}\\) de profundidad."
+      }
+    ],
+    "correct": 2,
+    "explanation": "La capacidad interior efectiva del horno debe ser al menos \\(80 \\text{ litros}\\), lo que equivale a \\(80000 \\text{ cm}^3\\). Dado que el \\(80\\%\\) del volumen externo corresponde al volumen interior, el volumen externo requerido debe ser al menos \\(80000 \\text{ cm}^3 / 0,80 = 100000 \\text{ cm}^3\\). Evaluando los volúmenes externos de cada modelo: Turkey (\\(99000 \\text{ cm}^3\\)), Lamb (\\(94500 \\text{ cm}^3\\)), Boar (\\(101250 \\text{ cm}^3\\)), Deer (\\(98000 \\text{ cm}^3\\)). Solo el modelo Boar excede o iguala los \\(100000 \\text{ cm}^3\\) requeridos, resultando en una capacidad efectiva de \\(81000 \\text{ cm}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "16",
+    "internalId": "q-1756952453250-0.7860288520390526",
+    "id": "q-ai-cat-1756952453250-3-1"
+  },
+  {
+    "text": "En la figura adjunta hay \\(2\\) edificios idénticos y cada uno en forma de paralelepípedo rectangular de base cuadrada, con las medidas que se señalan (base \\(5p \\times 5p\\), altura \\(20p\\)). Si la cara de mayor tamaño de un edificio tiene una superficie de \\(1.600 \\text{ m}^2\\), ¿cuál es el volumen de los \\(2\\) edificios, en metros cúbicos, considerando las \\(3\\) dimensiones visibles externamente?",
+    "options": [
+      {
+        "text": "32.000"
+      },
+      {
+        "text": "72.000"
+      },
+      {
+        "text": "13.600"
+      },
+      {
+        "text": "64.000"
+      }
+    ],
+    "correct": 3,
+    "explanation": "Las dimensiones de un edificio son \\(5p \\times 5p\\) para la base y \\(20p\\) para la altura. Las caras de mayor tamaño son las laterales, cuya área es \\(5p \\times 20p = 100p^2\\). Se nos dice que esta área es \\(1600 \\text{ m}^2\\). Así, \\(100p^2 = 1600 \\text{ m}^2 \\Rightarrow p^2 = 16 \\text{ m}^2 \\Rightarrow p = 4 \\text{ m}\\). Con \\(p=4 \\text{ m}\\), las dimensiones de un edificio son: base de \\(5 \\times 4 = 20 \\text{ m}\\) y altura de \\(20 \\times 4 = 80 \\text{ m}\\). El volumen de un edificio es \\(20 \\text{ m} \\times 20 \\text{ m} \\times 80 \\text{ m} = 32000 \\text{ m}^3\\). El volumen de los dos edificios idénticos es \\(2 \\times 32000 \\text{ m}^3 = 64000 \\text{ m}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "17",
+    "internalId": "q-1756952453250-0.6547862585658375",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420126-ax36jvrfdz-Screenshot_20250903_223536.png",
+      "filename": "Screenshot_20250903_223536.png"
+    },
+    "id": "q-ai-cat-1756952453250-3-2"
+  },
+  {
+    "text": "La figura adjunta representa un prisma recto macizo con \\(2\\) caras paralelas cuadradas, el cual es cortado generando \\(3\\) cubos macizos idénticos, sin que sobre material. ¿Cuál afirmación es correcta respecto al área de la figura original y las \\(3\\) resultantes?",
+    "options": [
+      {
+        "text": "El área del prisma rectangular original es igual que la suma de las áreas individuales de los cubos."
+      },
+      {
+        "text": "La suma de las áreas individuales de los cubos es \\(7/9\\) del área del prisma rectangular original."
+      },
+      {
+        "text": "La diferencia positiva de las áreas entre el prisma original y los \\(3\\) cubos es de \\(16x \\text{ cm}^2\\)."
+      },
+      {
+        "text": "La suma de las áreas individuales de los cubos es \\(9/7\\) del área del prisma rectangular original."
+      }
+    ],
+    "correct": 3,
+    "explanation": "Si un prisma rectangular con base cuadrada (\\(x \\times x\\)) y altura \\(3x\\) se corta en \\(3\\) cubos idénticos, cada cubo tendrá una arista de longitud \\(x\\). El área total del prisma original es \\(A_{prisma} = 2(x \\cdot x) + 4(x \\cdot 3x) = 2x^2 + 12x^2 = 14x^2\\). El área total de un cubo es \\(A_{cubo} = 6x^2\\). La suma de las áreas individuales de los \\(3\\) cubos es \\(3 \\times A_{cubo} = 3 \\times 6x^2 = 18x^2\\). La razón entre la suma de las áreas de los cubos y el área del prisma original es \\( (18x^2) / (14x^2) = 18/14 = 9/7\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "25",
+    "internalId": "q-1756952453250-0.7780935505032038",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420126-u186bddk30o-Screenshot_20250903_223608.png",
+      "filename": "Screenshot_20250903_223608.png"
+    },
+    "id": "q-ai-cat-1756952453250-3-3"
+  },
+  {
+    "text": "La imagen adjunta corresponde a un perfil de fierro que tiene la siguiente descripción por internet: Perfil tubular cuadrado de dimensiones \\((50 \\times 50 \\times 2) \\text{ mm} \\times (6\\text{m})\\), donde no se muestra el largo completo. ¿Cuál es el volumen en \\(\\text{cm}^3\\) de fierro que tiene este perfil tubular cuadrado, sin considerar el espacio interno?",
+    "options": [
+      {
+        "text": "\\(2.304 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(15.000 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(14.400 \\text{ cm}^3\\)"
+      },
+      {
+        "text": "\\(600 \\text{ cm}^3\\)"
+      }
+    ],
+    "correct": 0,
+    "explanation": "El perfil es un tubo cuadrado. Convertimos las dimensiones a centímetros: el lado exterior es \\(50 \\text{ mm} = 5 \\text{ cm}\\), el grosor de la pared es \\(2 \\text{ mm} = 0,2 \\text{ cm}\\), y el largo es \\(6 \\text{ m} = 600 \\text{ cm}\\). El volumen exterior del perfil es \\(V_{exterior} = (5 \\text{ cm})^2 \\times 600 \\text{ cm} = 15000 \\text{ cm}^3\\). El lado interior del perfil es \\(5 \\text{ cm} - 2 \\times 0,2 \\text{ cm} = 4,6 \\text{ cm}\\). El volumen interior del perfil (el espacio hueco) es \\(V_{interior} = (4,6 \\text{ cm})^2 \\times 600 \\text{ cm} = 12696 \\text{ cm}^3\\). El volumen de fierro es la diferencia: \\(V_{fierro} = 15000 \\text{ cm}^3 - 12696 \\text{ cm}^3 = 2304 \\text{ cm}^3\\).",
+    "sourceFileName": "Text Input",
+    "originalQuestionNumber": "40",
+    "internalId": "q-1756952453250-0.834200354674022",
+    "diagram": {
+      "type": "raster",
+      "src": "images/1756953420127-cbztm78isip-Screenshot_20250903_223643.png",
+      "filename": "Screenshot_20250903_223643.png"
+    },
+    "id": "q-ai-cat-1756952453250-3-4"
+  }
+];
+        const categories = [
+  {
+    "id": "ai-cat-1756952453250-0",
+    "title": "Grupo 1: Cálculos Fundamentales y Aplicaciones Directas",
+    "description": "<p>Esta sección se centra en la aplicación directa de fórmulas básicas para el cálculo de volúmenes y áreas superficiales de <strong>cubos</strong> y <strong>prismas rectangulares</strong>. Es crucial dominar:</p><ul><li><strong>Suma de aristas de un cubo:</strong> Un cubo tiene 12 aristas de igual longitud, por lo tanto, la suma es \\(12 \\cdot a\\), donde \\(a\\) es la arista.</li><li><strong>Volumen de un prisma rectangular:</strong> \\(V = \\text{largo} \\cdot \\text{ancho} \\cdot \\text{altura}\\).</li><li><strong>Volumen de un cubo:</strong> \\(V = a^3\\).</li><li><strong>Área total de un cubo:</strong> \\(A = 6a^2\\).</li><li><strong>Conversiones de unidades:</strong> Es fundamental recordar que \\(1 \\text{ litro} = 1000 \\text{ cm}^3\\) y \\(1 \\text{ m}^3 = 1000 \\text{ litros}\\).</li></ul><p>Los problemas aquí requieren identificar correctamente las dimensiones y aplicar las fórmulas pertinentes, a menudo incluyendo conversiones de unidades.</p>",
+    "summaryKey": "ai-cat-1756952453250-0",
+    "problem_ids": [
+      "q-ai-cat-1756952453250-0-0",
+      "q-ai-cat-1756952453250-0-1",
+      "q-ai-cat-1756952453250-0-2",
+      "q-ai-cat-1756952453250-0-3",
+      "q-ai-cat-1756952453250-0-4"
+    ]
+  },
+  {
+    "id": "ai-cat-1756952453250-1",
+    "title": "Grupo 2: Razonamiento Algebraico y Proporcional",
+    "description": "<p>Esta sección se enfoca en cómo los cambios en las dimensiones afectan el volumen y el área superficial de los cuerpos geométricos, utilizando expresiones algebraicas y razones. Los conceptos clave incluyen:</p><ul><li><strong>Escalado de volúmenes:</strong> Si las dimensiones de un cuerpo se multiplican por un factor \\(k\\), el volumen se multiplica por \\(k^3\\).</li><li><strong>Escalado de áreas:</strong> Si las dimensiones de un cuerpo se multiplican por un factor \\(k\\), el área superficial se multiplica por \\(k^2\\).</li><li><strong>Cambios porcentuales:</strong> Un aumento del \\(x\\%\\) se representa multiplicando por \\((1 + x/100)\\), y una disminución por \\((1 - x/100)\\).</li><li><strong>Relación entre volúmenes y áreas de cuerpos semejantes:</strong> Si la razón de las aristas es \\(a_1:a_2\\), entonces la razón de los volúmenes es \\(a_1^3:a_2^3\\) y la razón de las áreas es \\(a_1^2:a_2^2\\).</li></ul><p>Los problemas requieren habilidades de factorización y manipulación algebraica.</p>",
+    "summaryKey": "ai-cat-1756952453250-1",
+    "problem_ids": [
+      "q-ai-cat-1756952453250-1-0",
+      "q-ai-cat-1756952453250-1-1",
+      "q-ai-cat-1756952453250-1-2",
+      "q-ai-cat-1756952453250-1-3",
+      "q-ai-cat-1756952453250-1-4"
+    ]
+  },
+  {
+    "id": "ai-cat-1756952453250-2",
+    "title": "Grupo 3: Sólidos Compuestos y Visualización Espacial",
+    "description": "<p>Esta sección desafía la capacidad de calcular volúmenes y áreas superficiales de sólidos complejos que resultan de la unión o sustracción de cuerpos geométricos más simples. Los puntos clave a considerar son:</p><ul><li><strong>Descomposición:</strong> Dividir el sólido compuesto en paralelepípedos rectangulares o cubos más simples.</li><li><strong>Volumen total:</strong> Calcular la suma de los volúmenes de las partes (o restar volúmenes huecos).</li><li><strong>Área superficial total:</strong> Calcular las áreas de <strong>todas las caras expuestas</strong>, prestando especial atención a no contar las superficies de contacto internas. Para sólidos huecos, la diferencia de los volúmenes externos e internos da el volumen del material.</li><li><strong>Visualización 3D:</strong> Es fundamental poder imaginar la forma resultante y las caras que quedan expuestas.</li></ul>",
+    "summaryKey": "ai-cat-1756952453250-2",
+    "problem_ids": [
+      "q-ai-cat-1756952453250-2-0",
+      "q-ai-cat-1756952453250-2-1",
+      "q-ai-cat-1756952453250-2-2",
+      "q-ai-cat-1756952453250-2-3",
+      "q-ai-cat-1756952453250-2-4"
+    ]
+  },
+  {
+    "id": "ai-cat-1756952453250-3",
+    "title": "Grupo 4: Aplicaciones Avanzadas y Problemas de Múltiples Pasos",
+    "description": "<p>Esta categoría presenta problemas que requieren un análisis más profundo y la combinación de varios conceptos geométricos y algebraicos. Las habilidades clave para esta sección incluyen:</p><ul><li><strong>Interpretación de enunciados:</strong> Desglosar problemas complejos en pasos manejables.</li><li><strong>Cálculos de volumen y área:</strong> Aplicar las fórmulas en contextos del mundo real, a menudo involucrando objetos huecos o con materiales específicos.</li><li><strong>Porcentajes y proporciones:</strong> Utilizar porcentajes para determinar capacidades efectivas o cambios en el volumen.</li><li><strong>Conversiones de unidades:</strong> Realizar conversiones precisas entre diferentes unidades (mm a cm, m a cm, litros a \\(\\text{cm}^3\\)).</li><li><strong>Resolución de ecuaciones:</strong> Encontrar dimensiones desconocidas a partir de áreas o volúmenes dados.</li></ul><p>Estos problemas simulan situaciones prácticas y demandan un pensamiento crítico y estructurado.</p>",
+    "summaryKey": "ai-cat-1756952453250-3",
+    "problem_ids": [
+      "q-ai-cat-1756952453250-3-0",
+      "q-ai-cat-1756952453250-3-1",
+      "q-ai-cat-1756952453250-3-2",
+      "q-ai-cat-1756952453250-3-3",
+      "q-ai-cat-1756952453250-3-4"
+    ]
+  }
+];
+
+        const problemsById = {};
+        allProblemsData.forEach(p => { problemsById[p.id] = p; });
+        
+        let currentQuizProblems = [];
+        let currentCategory = null;
+        let completedCategories = JSON.parse(localStorage.getItem('completedQuizCategories')) || {};
+        let currentProblemIndex = 0;
+        let score = 0;
+        
+        const categorySelectionScreen = document.getElementById('category-selection-screen');
+        const categoryListEl = document.getElementById('category-list');
+        const overallProgressContainer = document.getElementById('overall-progress-container');
+        const overallScoreEl = document.getElementById('overall-score');
+        const showFinalResultsBtn = document.getElementById('show-final-results-btn');
+        const quizWrapperEl = document.getElementById('quiz-wrapper');
+        const summaryContainerEl = document.getElementById('summary-container');
+        const summaryContinueBtn = document.getElementById('summary-continue-btn');
+        const quizContainerEl = document.getElementById('quiz-container');
+        const headerEl = document.getElementById('problem-header');
+        const questionEl = document.getElementById('question-container');
+        const graphEl = document.getElementById('graph-container');
+        const optionsEl = document.getElementById('options-container');
+        const feedbackEl = document.getElementById('feedback-container');
+        const nextButton = document.getElementById('next-button');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreCounterEl = document.getElementById('score-counter');
+        const finalScreenEl = document.getElementById('final-screen');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+
+        function renderCategoryScreen() {
+            categoryListEl.innerHTML = '';
+            let totalCompleted = 0;
+            let totalPossibleScore = 0;
+            let totalUserScore = 0;
+
+            categories.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = 'category-item';
+                li.dataset.categoryId = cat.id;
+                
+                const catProgress = completedCategories[cat.id];
+                let progressHTML = '';
+                if(catProgress) {
+                    li.classList.add('completed');
+                    if (catProgress.total > 0) {
+                        progressHTML = `<div class="progress-info">Completado: ${catProgress.score}/${catProgress.total}</div>`;
+                    }
+                    totalCompleted++;
+                    totalUserScore += catProgress.score;
+                    totalPossibleScore += cat.problem_ids.length;
+                }
+
+                li.innerHTML = `<h3>${cat.title}</h3><p>${cat.description.replace(/<[^>]*>?/gm, '').substring(0, 100)}...</p>${progressHTML}`;
+                li.onclick = () => {
+                    if (!li.classList.contains('completed')) {
+                        startCategory(cat.id);
+                    }
+                };
+                categoryListEl.appendChild(li);
+            });
+
+            if (Object.keys(completedCategories).length > 0) {
+                overallProgressContainer.classList.remove('hidden');
+                overallScoreEl.textContent = `Puntaje total: ${totalUserScore} de ${totalPossibleScore} correctas. Secciones completadas: ${totalCompleted} de ${categories.length}.`;
+            } else {
+                 overallProgressContainer.classList.add('hidden');
+            }
+
+            if (totalCompleted === categories.length && categories.length > 0) {
+                showFinalResultsBtn.classList.remove('hidden');
+            } else {
+                showFinalResultsBtn.classList.add('hidden');
+            }
+
+            quizWrapperEl.classList.add('hidden');
+            categorySelectionScreen.classList.remove('hidden');
+        }
+
+        function startCategory(categoryId) {
+            currentCategory = categories.find(c => c.id === categoryId);
+            if (!currentCategory) return;
+            
+            categorySelectionScreen.classList.add('hidden');
+            quizWrapperEl.classList.remove('hidden');
+
+            currentQuizProblems = currentCategory.problem_ids.map(id => problemsById[id]);
+            currentProblemIndex = 0;
+            score = 0;
+            
+            showSummary(currentCategory.id);
+        }
+
+        function showSummary(summaryKey) {
+            const summary = summaries[summaryKey];
+            if (!summary) {
+                 summaryContinueBtn.onclick(); return;
+            }
+            
+            const summaryTitleEl = document.getElementById('summary-title');
+            const keyConceptsEl = document.getElementById('summary-key-concepts');
+            const tipsListEl = document.getElementById('summary-tips-list');
+    
+            summaryTitleEl.textContent = `Preparación para: ${summary.title}`;
+            keyConceptsEl.innerHTML = summary.key_concepts_html;
+            
+            tipsListEl.innerHTML = '';
+            summary.tips.forEach(tip => {
+                const li = document.createElement('li');
+                li.textContent = tip;
+                tipsListEl.appendChild(li);
+            });
+            
+            renderMath();
+            quizContainerEl.classList.add('hidden');
+            finalScreenEl.classList.add('hidden');
+            summaryContainerEl.classList.remove('hidden');
+        }
+
+        summaryContinueBtn.onclick = () => {
+            summaryContainerEl.classList.add('hidden');
+            if (currentQuizProblems && currentQuizProblems.length > 0) {
+                quizContainerEl.classList.remove('hidden');
+                renderProblem(currentProblemIndex);
+            } else {
+                endOfCategory();
+            }
+        };
+        
+        function renderProblem(index) {
+            optionsEl.innerHTML = '';
+            feedbackEl.style.display = 'none';
+            nextButton.classList.remove('visible');
+            graphEl.innerHTML = '';
+            optionsEl.className = '';
+
+            const problem = currentQuizProblems[index];
+            if (!problem) {
+                console.error("Could not find problem for index:", index, "in category:", currentCategory.title);
+                questionEl.innerHTML = "Error: No se pudo cargar la pregunta. Verifique que los datos sean correctos.";
+                return;
+            }
+
+            headerEl.textContent = `Pregunta ${index + 1} de ${currentQuizProblems.length}`;
+            questionEl.innerHTML = problem.text;
+            progressBar.style.width = `${((index) / currentQuizProblems.length) * 100}%`;
+            scoreCounterEl.textContent = `✅ Puntos: ${score}`;
+            
+            if (problem.diagram) {
+                graphEl.style.display = 'block';
+                graphEl.innerHTML = renderDiagram(problem.diagram);
+            } else {
+                graphEl.style.display = 'none';
+            }
+            
+            const optionsHaveDiagrams = problem.options.some(opt => opt.diagram);
+
+            if (optionsHaveDiagrams) {
+                 optionsEl.className = 'options-grid-with-graphs';
+                 problem.options.forEach((opt, i) => createOptionBlock(opt, i));
+            } else {
+                 problem.options.forEach((opt, i) => createOptionButton(opt, i));
+            }
+            renderMath();
+        }
+        
+        function createOptionButton(option, index) {
+            const button = document.createElement('button');
+            button.className = 'option-button';
+            button.dataset.index = index;
+            button.innerHTML = `<span class="label">${String.fromCharCode(65 + index)})</span> <span class="value">${option.text || ''}</span>`;
+            button.onclick = handleOptionClick;
+            optionsEl.appendChild(button);
+        }
+        
+        function createOptionBlock(option, index) {
+            const optionBlock = document.createElement('div');
+            optionBlock.className = 'option-block-graph';
+            optionBlock.dataset.index = index;
+            optionBlock.onclick = handleOptionClick;
+            let diagramHTML = option.diagram ? `<div class="option-graph-canvas-container">${renderDiagram(option.diagram)}</div>` : '';
+            optionBlock.innerHTML = `<div class="label">${String.fromCharCode(65 + index)}) ${option.text || ''}</div> ${diagramHTML}`;
+            optionsEl.appendChild(optionBlock);
+        }
+
+        function handleOptionClick(event) {
+            const problem = currentQuizProblems[currentProblemIndex];
+            const selectedIndex = parseInt(event.currentTarget.dataset.index, 10);
+            const correctIndex = problem.correct;
+            
+            const correctButton = document.querySelector(`[data-index="${correctIndex}"]`);
+            if (correctButton) correctButton.classList.add('correct');
+            
+            let isAnswerCorrect = false;
+            const selectedButton = event.currentTarget;
+            if (selectedIndex === correctIndex) {
+                score++;
+                isAnswerCorrect = true;
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+            
+            scoreCounterEl.textContent = `✅ Puntos: ${score}`;
+            document.querySelectorAll('.option-button, .option-block-graph').forEach(btn => { btn.classList.add('disabled'); btn.onclick = null; });
+            progressBar.style.width = `${((currentProblemIndex + 1) / currentQuizProblems.length) * 100}%`;
+            
+            feedbackEl.className = isAnswerCorrect ? 'feedback-container correct' : 'feedback-container incorrect';
+            const feedbackTitle = isAnswerCorrect ? `<div id="feedback-title">${icons.check} Correcto</div>` : `<div id="feedback-title">${icons.x} Incorrecto</div>`;
+            feedbackEl.innerHTML = `${feedbackTitle}${problem.explanation}`;
+            
+            renderMath();
+            feedbackEl.style.display = 'block';
+            if (currentProblemIndex < currentQuizProblems.length - 1) { nextButton.textContent = 'Siguiente →'; } 
+            else { nextButton.textContent = 'Finalizar Sección'; }
+            nextButton.classList.add('visible');
+        }
+
+        nextButton.onclick = () => {
+            currentProblemIndex++;
+            if (currentProblemIndex < currentQuizProblems.length) {
+                renderProblem(currentProblemIndex);
+            } else {
+                endOfCategory();
+            }
+        };
+        
+        function endOfCategory() {
+            completedCategories[currentCategory.id] = {
+                score: score,
+                total: currentQuizProblems.length
+            };
+            localStorage.setItem('completedQuizCategories', JSON.stringify(completedCategories));
+            
+            quizContainerEl.classList.add('hidden');
+            finalScreenEl.classList.remove('hidden');
+
+            const percentage = currentQuizProblems.length > 0 ? Math.round((score / currentQuizProblems.length) * 100) : 100;
+            document.getElementById('final-title').textContent = `Sección Completada: ${currentCategory.title}`;
+            document.getElementById('final-message').textContent = currentQuizProblems.length > 0 ? `¡Gran trabajo! Has completado esta sección.` : `¡Concepto explorado! Ahora puedes continuar con la siguiente sección.`;
+            document.getElementById('final-score').textContent = currentQuizProblems.length > 0 ? `${score} / ${currentQuizProblems.length}` : '✔';
+            const finalPercentageEl = document.getElementById('final-percentage');
+            if (currentQuizProblems.length > 0) {
+                finalPercentageEl.textContent = `(${percentage}%)`;
+                finalPercentageEl.style.color = percentage >= 60 ? 'var(--success-color)' : 'var(--danger-color)';
+            } else {
+                finalPercentageEl.textContent = '';
+            }
+            backToMenuBtn.textContent = 'Volver al Menú';
+            backToMenuBtn.onclick = () => {
+                finalScreenEl.classList.add('hidden');
+                renderCategoryScreen();
+            };
+        }
+        
+        showFinalResultsBtn.onclick = () => {
+            categorySelectionScreen.classList.add('hidden');
+            quizWrapperEl.classList.remove('hidden');
+
+            summaryContainerEl.classList.add('hidden');
+            quizContainerEl.classList.add('hidden');
+            finalScreenEl.classList.remove('hidden');
+
+            let totalScore = 0;
+            let totalProblems = 0;
+            Object.values(completedCategories).forEach(cat => {
+                totalScore += cat.score;
+                if (cat.total > 0) {
+                    totalProblems += cat.total;
+                }
+            });
+
+            const percentage = totalProblems > 0 ? Math.round((totalScore / totalProblems) * 100) : 0;
+            document.getElementById('final-title').textContent = '¡Resumen Final del Desafío!';
+            document.getElementById('final-message').textContent = '¡Felicidades! Has completado todos los temas. Este es tu rendimiento general.';
+            document.getElementById('final-score').textContent = `${totalScore} / ${totalProblems}`;
+            const finalPercentageEl = document.getElementById('final-percentage');
+            finalPercentageEl.textContent = `(${percentage}%)`;
+            finalPercentageEl.style.color = percentage >= 60 ? 'var(--success-color)' : 'var(--danger-color)';
+            
+            backToMenuBtn.textContent = 'Reiniciar Desafío';
+            backToMenuBtn.onclick = () => {
+                localStorage.removeItem('completedQuizCategories');
+                window.location.reload();
+            };
+        };
+        
+        renderCategoryScreen();
+        renderMath();
+    });
+    </script>
+</body>
+</html>
+  
